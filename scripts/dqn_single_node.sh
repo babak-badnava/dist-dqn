@@ -8,6 +8,7 @@ if [ "$#" -ne 2 ]; then
   exit 1
 fi
 
+export CUDA_VISIBLE_DEVICES=0
 # Get DQN hyper-parameters for the environment
 SCRIPTS_DIR=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
 source "$SCRIPTS_DIR/dqn_params.sh"

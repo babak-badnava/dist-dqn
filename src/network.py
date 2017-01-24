@@ -113,7 +113,7 @@ class Network:
 
     # Merge all the summaries in this graph
     if summaries:
-      self.summary_op = tf.merge_summary(summaries)
+      self.summary_op = tf.summary.merge(summaries)
 
   @classmethod
   def _init_params(cls, config, input_shape, output_size, summaries=None):
@@ -152,7 +152,7 @@ class Network:
       loss += config.reg_param * reg_loss
 
     if summaries is not None:
-      summaries.append(tf.scalar_summary('loss', loss))
+      summaries.append(tf.summary.scalar('loss', loss))
 
     return loss
 

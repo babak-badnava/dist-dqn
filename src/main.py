@@ -127,7 +127,7 @@ def run_worker(cluster, server, args):
       ps_device=ps_device,
       worker_device=worker_device,
     )
-    init_op = tf.initialize_all_variables()
+    init_op = tf.global_variables_initializer()
 
   # Designate the first worker task as the chief
   is_chief = (args.task_id == 0)
@@ -141,11 +141,6 @@ def run_worker(cluster, server, args):
     summary_op=None, # Explicitly disable as DQNAgent handles summaries
     recovery_wait_secs=3,
   )
-
-  # Start the gym monitor if needed
-  video = False if args.disable_video else None
-  if args.monitor:
-    env.monitor.start(args.monitor_path, resume=True, video_callable=video)
 
   # Initialize memory for experience replay
   replay_memory = ReplayMemory(args.replay_memory_capacity)
@@ -173,7 +168,10 @@ if __name__ == '__main__':
 
   ps_hosts = args.ps_hosts.split(',') if args.ps_hosts else []
   worker_hosts = args.worker_hosts.split(',') if args.worker_hosts else []
-  cluster = tf.train.ClusterSpec({'ps': ps_hosts, 'worker': worker_hosts})
+  if (ps_hosts == []):
+    cluster = tf.train.ClusterSpec({'worker': worker_hosts})
+  else:
+    cluster = tf.train.ClusterSpec({'ps': ps_hosts, 'worker': worker_hosts})
 
   # Create a TensorFlow server that acts either as a param server or
   # as a worker. For non-distributed setup, we still create a single

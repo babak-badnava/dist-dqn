@@ -10,6 +10,8 @@ import random
 import tensorflow as tf
 import utils
 
+import gym.wrappers as wrappers
+
 class DQNAgent:
   # Reward penalty on failure for each environment
   FAILURE_PENALTY = {
@@ -36,7 +38,7 @@ class DQNAgent:
 
     self.summary_writer = None
     if enable_summary:
-      self.summary_writer = tf.train.SummaryWriter(config.logdir, session.graph)
+      self.summary_writer = tf.summary.FileWriter(config.logdir, session.graph)
 
     self.frame_buffer = FrameBuffer(
       frames_per_state=config.frames_per_state,
@@ -53,6 +55,14 @@ class DQNAgent:
     """
     Train the DQN for the configured number of episodes.
     """
+
+    init_state = self.env.reset()
+    
+    # Start the gym monitor if needed
+    video = False if self.config.disable_video else None
+    if self.config.monitor:
+      self.env = wrappers.Monitor(self.env, self.config.monitor_path, resume=True, video_callable=video)
+
     for episode in range(num_episodes):
       # Train an episode
       reward, steps = self.train_episode(max_steps_per_episode)
@@ -75,8 +85,8 @@ class DQNAgent:
     and train minibatches from replay memory against the target network.
     """
     self.frame_buffer.clear()
-    observation = self.env.reset()
-    self.frame_buffer.append(observation)
+    init_state = self.env.reset()
+    self.frame_buffer.append(init_state)
     state = self.frame_buffer.get_state()
 
     total_reward = steps = 0
@@ -194,13 +204,15 @@ class DQNAgent:
     executing them, and adding the experiences to the memory.
     """
     terminal = True
+    initial = True
     while self.replay_memory.size() < prefill_size:
       # Reset the environment and the frame buffer between gameplays
-      if terminal:
+      if terminal or initial:
         self.frame_buffer.clear()
         observation = self.env.reset()
         self.frame_buffer.append(observation)
         state = self.frame_buffer.get_state()
+        initial = False
 
       # Sample a random action and execute it
       action = self.env.action_space.sample()

@@ -67,6 +67,7 @@ done
 i=0
 while [[ $i -lt $NUM_PARAM_SERVERS ]]
 do
+  export CUDA_VISIBLE_DEVICES=$i
   outfile="$BASE_LOG_DIR/ps$i"
   echo "Starting param server $i. Stdout: $outfile, train logs: $TRAIN_LOG_DIR."
 
@@ -85,6 +86,7 @@ done
 i=0
 while [[ $i -lt $NUM_WORKERS ]]
 do
+  export CUDA_VISIBLE_DEVICES=$(($i+1))
   outfile="$BASE_LOG_DIR/worker$i"
   gym_log="$GYM_LOG_DIR$i"
   log_params="--logdir=$TRAIN_LOG_DIR --monitor --monitor_path=$gym_log \
