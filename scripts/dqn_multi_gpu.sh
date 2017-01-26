@@ -89,8 +89,7 @@ do
   export CUDA_VISIBLE_DEVICES=$(($i+1))
   outfile="$BASE_LOG_DIR/worker$i"
   gym_log="$GYM_LOG_DIR$i"
-  log_params="--logdir=$TRAIN_LOG_DIR --monitor --monitor_path=$gym_log \
-              --disable_video" # Disable video for headless machines.
+  log_params="--logdir=$TRAIN_LOG_DIR --monitor --monitor_path=$gym_log --disable_video"
 
   echo "Starting worker $i. Stdout: $outfile, train logs: $TRAIN_LOG_DIR, " \
        "Gym monitor logs: $gym_log."
@@ -100,7 +99,7 @@ do
   --worker_hosts=$worker_hosts \
   --job="worker" \
   --task_id=$i \
-  --gpu_id=$(($i + 1)) \
+  --gpu_id=$(($i+1)) \
   > $outfile 2>&1 &
 
   i=$(($i + 1))

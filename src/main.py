@@ -97,8 +97,29 @@ def parse_args():
 
   return parser.parse_args()
 
+from gym.core import Wrapper
+class RewardForPassingGates(Wrapper):
+    """Skiing wrapper that rewards player +1 for passing gates only."""
+    def _reset(self):
+        """On game reset, remember the hash of initial score"""
+        s = self.env.reset()
+        self.prev_score_hash = hash(s[31:38,67:81].tobytes()) #hash of the image chunk with scoreboard
+        return s
+    def _step(self,action):
+        """on each step, if score has changed, give +1 reward, else +0"""
+        s,_,done,info = self.env.step(action)
+        new_score_hash = hash(s[31:38,67:81].tobytes()) #hash of the same image chunk
+
+        #reward = +1 if we have just crossed the gate, else 0
+        r = int(new_score_hash != self.prev_score_hash)
+
+        #remember new score
+        self.prev_score_hash = new_score_hash
+        return s,r,done,info
+
 def run_worker(cluster, server, args):
   env = gym.make(args.env)
+  #env = RewardForPassingGates(env)
   worker_job = args.job
   num_workers = len(cluster.job_tasks(worker_job))
 
@@ -111,8 +132,7 @@ def run_worker(cluster, server, args):
 
   # If no GPU devices are found, then allow_soft_placement in the
   # config below results in falling back to CPU.
-  worker_device = '/job:%s/task:%d/gpu:%d' % \
-                      (worker_job, args.task_id, args.gpu_id)
+  worker_device = '/job:%s/task:%d/gpu:%d' % (worker_job, args.task_id, args.gpu_id)
 
   replica_setter = tf.train.replica_device_setter(
     worker_device=worker_device,

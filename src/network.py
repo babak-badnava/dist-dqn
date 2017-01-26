@@ -222,13 +222,13 @@ class Network:
       # initialize them locally. Otherwise, non-chief workers are forever
       # waiting for the chief worker to initialize the replicated target params.
       target_param_device = worker_device
-      collections = tf.GraphKeys.LOCAL_VARIABLES
+      collections = [tf.GraphKeys.LOCAL_VARIABLES]
     else:
       # If target param replication is disabled, param server takes the
       # ownership of target params. Allocate on the same device as the other
       # params managed by the param server.
       target_param_device = ps_device
-      collections = None
+      collections = []
 
     # Initialize the target weights and layers
     with tf.variable_scope('target'):
