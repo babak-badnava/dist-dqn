@@ -3,8 +3,8 @@
 # Single-host multi-GPU DQN
 # (Data parallelism using between-graph replication)
 
-if [ "$#" -ne 3 ]; then
-  echo "Usage: $0 <env_type> <env_name> <num_gpus>. " \
+if [ "$#" -ne 4 ]; then
+  echo "Usage: $0 <env_type> <env_name> <num_gpus> <new_model>. " \
        "Options for env_type: [control, atari]."
   exit 1
 fi
@@ -21,6 +21,13 @@ GYM_LOG_DIR="$BASE_LOG_DIR/gym"
 NUM_PARAM_SERVERS=1
 PARAM_SERVER_PORT=8080
 WORKER_PORT=8090
+
+# we need to clean tmp logs if were changing the model between runs
+new_model=$4
+if $new_model ; then
+    [ "$(ls -A /tmp/train)" ] && rm /tmp/train/* || echo "Train Empty"
+    [ "$(ls -A /tmp/train_logs)" ] && rm /tmp/train_logs/* || echo "Logs Empty"
+fi
 
 # num_gpus == 0: 1 CPU worker
 # num_gpus == 1: 1 GPU worker
