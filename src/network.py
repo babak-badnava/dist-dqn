@@ -146,7 +146,7 @@ class Network:
 
     @return: loss_op
     """
-    q_masked = tf.reduce_sum(tf.mul(q, actions), reduction_indices=[1])
+    q_masked = tf.reduce_sum(tf.multiply(q, actions), reduction_indices=[1])
     loss = tf.reduce_mean(tf.squared_difference(q_masked, expected_q))
     if reg_loss is not None:
       loss += config.reg_param * reg_loss

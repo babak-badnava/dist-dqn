@@ -167,7 +167,7 @@ class DQNAgent:
 
     # Run forward prop and return the action with max q-value
     q_values = self._predict_q_values([state])
-    q_values = q_values * [0.5, 0.25, 0.25] # Weight NOOP more
+    # q_values = q_values * [0.5, 0.25, 0.25] # Weight NOOP more
     return q_values.argmax()
   
   def _roll_random_action_dice(self):
