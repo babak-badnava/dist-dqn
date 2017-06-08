@@ -3,7 +3,7 @@
 # Single-host multi-GPU DQN
 # (Data parallelism using between-graph replication)
 
-if [ "$#" -ne 4 ]; then
+if [ "$#" -ne 3 ]; then
   echo "Usage: $0 <env_type> <env_name> <num_gpus> <new_model>. " \
        "Options for env_type: [control, atari]."
   exit 1
@@ -105,9 +105,7 @@ do
   --ps_hosts=$ps_hosts \
   --worker_hosts=$worker_hosts \
   --job="worker" \
-  --task_id=$i \
-  --gpu_id=$(($i+1)) \
-  > $outfile 2>&1 &
+  --task_id=$i --gpu_id=$(($i+1)) > $outfile 2>&1 &
 
   i=$(($i + 1))
 done

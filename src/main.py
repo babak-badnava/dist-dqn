@@ -154,8 +154,8 @@ def run_worker(cluster, server, args):
     dqn_agent.train(args.num_episodes, args.max_steps_per_episode, sv)
 
   # Close the gym monitor
-  if args.monitor:
-    env.monitor.close()
+#   if args.monitor:
+#     env.monitor.close()
 
   # Stop all other services
   sv.stop()

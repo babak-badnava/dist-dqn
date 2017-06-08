@@ -10,7 +10,13 @@ import random
 import tensorflow as tf
 import utils
 
+
+import numpy as np
+
+from tqdm import *
+
 import gym.wrappers as wrappers
+from tqdm._tqdm import tqdm
 
 class DQNAgent:
   # Reward penalty on failure for each environment
@@ -50,6 +56,9 @@ class DQNAgent:
 
     # Initialize the target network
     self._update_target_network()
+    
+    self.rewards = []
+    self.mean_rewards = []
 
   def train(self, num_episodes, max_steps_per_episode, supervisor=None):
     """
@@ -63,22 +72,29 @@ class DQNAgent:
     if self.config.monitor:
       self.env = wrappers.Monitor(self.env, self.config.monitor_path, resume=True, video_callable=video)
 
-    for episode in range(num_episodes):
+    for episode in tqdm(range(num_episodes)):
       # Train an episode
       reward, steps = self.train_episode(max_steps_per_episode)
+#       self.summary_writer.add_summary(reward, episode)
 
       # Update stats
       self.stats.log_episode(reward, steps)
       mean_reward = self.stats.last_100_mean_reward()
+      self.rewards.append(reward)
+      self.mean_rewards.append(mean_reward)
       logging.info(
         'Episode = %d, steps = %d, reward = %d, training steps = %d, '
+        'last-100 mean reward = %.2f' %
+        (episode, steps, reward, self.training_steps, mean_reward))
+      print('Episode = %d, steps = %d, reward = %d, training steps = %d, '
         'last-100 mean reward = %.2f' %
         (episode, steps, reward, self.training_steps, mean_reward))
 
       if supervisor and supervisor.should_stop():
         logging.warning('Received signal to stop. Exiting train loop.')
         break
-
+    np.save('rewards', self.rewards)
+    np.save('mrewards', self.mean_rewards)
   def train_episode(self, max_steps):
     """
     Run one episode of the gym environment, add transitions to replay memory,
